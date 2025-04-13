@@ -45,4 +45,5 @@ source Installing_Docker-Compose_Through_Script.sh
 or simply use :
 ./Installing_Docker-Compose_Through_Script.sh
 ./Installing_Docker_Through_Script.sh
-
+# For kali linux use
+source Installing_Docer_And_Docker_Compose_On_Kali.sh
