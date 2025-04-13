@@ -24,7 +24,7 @@ This script installs the **Docker Compose CLI plugin**, allowing you to run `doc
 ##  Prerequisites
 
 - A supported Linux OS:
-  - Ubuntu / Debian
+  - Ubuntu / Debian / KALI / RHEL
 - `curl` and `sudo` privileges
 - Internet access
 
