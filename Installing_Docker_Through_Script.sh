@@ -1,28 +1,96 @@
 #!/bin/bash
 
-set -e  # Exit immediately if a command exits with a non-zero status
+set -e  # Exit on any error
 
-# Update package index
-sudo apt-get update
+echo "Detecting OS..."
+source /etc/os-release
 
-# Install required dependencies
-sudo apt-get install -y ca-certificates curl gnupg
+# Function to install Docker on Ubuntu
+install_docker_ubuntu() {
+  echo "Installing Docker on Ubuntu..."
 
-# Create keyring directory if it doesn't exist
-sudo install -m 0755 -d /etc/apt/keyrings
+  sudo apt-get update
+  sudo apt-get install -y ca-certificates curl gnupg
 
-# Add Docker's official GPG key
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo tee /etc/apt/keyrings/docker.asc > /dev/null
-sudo chmod a+r /etc/apt/keyrings/docker.asc
+  sudo install -m 0755 -d /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+    sudo tee /etc/apt/keyrings/docker.asc > /dev/null
+  sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-# Add Docker repository
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+    $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-# Update package index with Docker repo
-sudo apt-get update
+  sudo apt-get update
+  sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+}
 
-# Install Docker Engine and plugins
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+# Function to install Docker on Debian
+install_docker_debian() {
+  echo "Installing Docker on Debian..."
+
+  for pkg in docker.io docker-doc podman-docker containerd runc; do
+    sudo apt-get remove -y $pkg || true
+  done
+
+  sudo apt-get update
+  sudo apt-get install -y ca-certificates curl gnupg
+
+  sudo install -m 0755 -d /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/debian/gpg | \
+    sudo tee /etc/apt/keyrings/docker.asc > /dev/null
+  sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+  echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+  sudo apt-get update
+  sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+}
+
+# Function to install Docker on RHEL/CentOS
+install_docker_rhel() {
+  echo "Installing Docker on RHEL/CentOS..."
+
+  sudo dnf remove -y docker \
+    docker-client \
+    docker-client-latest \
+    docker-common \
+    docker-latest \
+    docker-latest-logrotate \
+    docker-logrotate \
+    docker-engine \
+    podman \
+    runc || true
+
+  sudo dnf -y install dnf-plugins-core
+  sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+
+  sudo dnf install -y docker-ce docker-ce-cli containerd.io
+  sudo systemctl enable --now docker
+}
+
+# Detect OS and run appropriate installer
+case "$ID" in
+  ubuntu)
+    install_docker_ubuntu
+    ;;
+  debian)
+    install_docker_debian
+    ;;
+  rhel|centos|fedora)
+    install_docker_rhel
+    ;;
+  *)
+    echo "Unsupported OS: $ID"
+    exit 1
+    ;;
+esac
+
+# Verify installation
+echo "Docker version:"
+docker --version
+
