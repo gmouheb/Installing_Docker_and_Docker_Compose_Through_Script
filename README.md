@@ -19,6 +19,10 @@ This script installs the latest version of **Docker Engine** on your system.
 
 This script installs the **Docker Compose CLI plugin**, allowing you to run `docker compose` commands (note: no hyphen).
 
+### `Installing_Docker_And_Docker_Compose_On_Kali.sh`
+
+This script installs the latest version of **Docker Engine** and **Docker Compose CLI plugin** for kali linux.
+
 ---
 
 ##  Prerequisites
