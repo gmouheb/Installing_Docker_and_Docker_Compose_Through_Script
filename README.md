@@ -5,7 +5,7 @@ This repository provides two simple Bash scripts to install:
 -  Docker Engine  
 -  Docker Compose (CLI plugin)
 
-These scripts support **Ubuntu/Debian**
+These scripts support **Ubuntu/Debian/Kali/RHEL**
 
 ---
 
